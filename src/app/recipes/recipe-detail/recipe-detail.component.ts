@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AddIngredientsAction } from 'src/app/shopping-list/store/shopping-list.actions';
-import { AppState } from 'src/app/shopping-list/store/shopping-list.reducer';
+import { AppState } from 'src/app/store/app.reducer';
 import { RecipeBookService } from '../recipe-book.service';
 import { Recipe } from '../recipe.model';
 

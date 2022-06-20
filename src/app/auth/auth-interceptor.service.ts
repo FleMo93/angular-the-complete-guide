@@ -1,7 +1,8 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { map, Observable, switchMap, take } from 'rxjs';
-import { AuthService } from './auth.service';
+import { AppState } from '../store/app.reducer';
 import { User } from './user.model';
 
 @Injectable({
@@ -10,12 +11,13 @@ import { User } from './user.model';
 export class AuthInterceptorService implements HttpInterceptor {
 
   constructor(
-    private readonly authService: AuthService
+    private readonly store: Store<AppState>
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return this.authService.user.pipe(
+    return this.store.select('auth').pipe(
       take(1),
+      map((v) => v.user),
       map<User | null, Observable<HttpEvent<any>>>((user) => {
         if (user && user.token) {
           req = req.clone({

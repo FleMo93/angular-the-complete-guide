@@ -1,18 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable, Subject, switchMap, take, tap } from 'rxjs';
-import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user.model';
 import { RecipeBookService } from '../recipes/recipe-book.service';
 import { Recipe } from '../recipes/recipe.model';
 import { environment } from '../../environments/environment';
+import { Store } from '@ngrx/store';
+import { AppState } from '../store/app.reducer';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataStorageService {
-
   private readonly url = `${environment.fireabase.api}/recipes.json`;
   private readonly onRecipesSaved = new Subject<void>();
   private readonly onRecipesFetched = new Subject<void>();
@@ -20,7 +20,7 @@ export class DataStorageService {
   constructor(
     private readonly http: HttpClient,
     private readonly recipesService: RecipeBookService,
-    private readonly authService: AuthService
+    private readonly store: Store<AppState>
   ) { }
 
   public storeRecipes() {
@@ -32,8 +32,9 @@ export class DataStorageService {
   }
 
   public fetchRecipes(): Observable<Recipe[]> {
-    const observable = this.authService.user.pipe(
+    const observable = this.store.select('auth').pipe(
       take(1),
+      map((v) => v.user),
       map<User | null, Observable<Recipe[]>>((user) => {
         if (!user || !user.token) return new Observable((sub) => {
           sub.next([]);

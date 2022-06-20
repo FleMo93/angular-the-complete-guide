@@ -1,13 +1,13 @@
-import { Action, ActionReducerMap } from "@ngrx/store";
+import { Action } from "@ngrx/store";
 import { Ingredient } from "../../shared/ingredient.model";
 
 export enum Actions {
-  AddIngredient = 'ADD_INGREDIENT',
-  AddIngredients = 'ADD_INGREDIENTS',
-  RemoveIngredient = 'REMOVE_INGREDIENT',
-  UpdateIngredient = 'UPDATE_INGREDIENT',
-  StartEdit = 'START_EDIT',
-  StopEdit = 'STOP_EDIT'
+  AddIngredient = '[Shopping List] Add ingredient',
+  AddIngredients = '[Shopping List] Add ingredients',
+  RemoveIngredient = '[Shopping List] Remove ingredient',
+  UpdateIngredient = '[Shopping List] Update ingredient',
+  StartEdit = '[Shopping List] Start edit',
+  StopEdit = '[Shopping List] Stop edit'
 }
 
 export class AddIngredientAction implements Action {
