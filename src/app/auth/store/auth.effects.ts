@@ -86,11 +86,10 @@ export class AuthEffects {
         return action;
       }
       const userData = JSON.parse(userDataString);
-      const expirationDate = new Date(userData.tokenExpirationDate);
+      const expirationDate = new Date(userData._tokenExpirationDate);
       const user = new User(userData.email, userData.id, userData._token, expirationDate);
       this.authService.setLogoutTimer(expirationDate.getTime() - Date.now());
       return new AuthActions.LoginAction(user);
-      // return true;
     })
   ));
 
