@@ -2,37 +2,52 @@ import {
   Component,
   ComponentFactoryResolver,
   OnDestroy,
+  OnInit,
   ViewChild
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { AlertComponent } from '../shared/alert/alert.component';
 import { PlaceholderDirective } from '../shared/placeholder.directive';
+import { AppState } from '../store/app.reducer';
 import { AuthService } from './auth.service';
+import { LoginAction, AuthenticateStart, SignupStart, HandleError } from './store/auth.actions';
 
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.css']
 })
-export class AuthComponent implements OnDestroy {
-  public isLoggedIn = false;
+export class AuthComponent implements OnInit, OnDestroy {
   public isSignUpMode = false;
   public isInProgress = false;
   public error: string | null = null;
   @ViewChild(PlaceholderDirective, { static: false }) alertHost!: PlaceholderDirective;
 
   private alertCloseSub?: Subscription;
+  private storeSub?: Subscription;
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly componentFactoryResolve: ComponentFactoryResolver
+    private readonly componentFactoryResolve: ComponentFactoryResolver,
+    private readonly store: Store<AppState>
   ) { }
+
+  ngOnInit(): void {
+    this.storeSub = this.store.select('auth').subscribe((authState) => {
+      this.isInProgress = authState.loading;
+      this.error = authState.authError ?? null;
+      if (this.error)
+        this.showErrorAlert(this.error);
+    });
+  }
 
   ngOnDestroy(): void {
     this.alertCloseSub?.unsubscribe();
+    this.storeSub?.unsubscribe();
   }
 
   public onSwitchMode() {
@@ -43,22 +58,11 @@ export class AuthComponent implements OnDestroy {
     if (!authForm.valid) return;
     this.isInProgress = true;
     this.error = null;
-    const method = this.isSignUpMode ? this.authService.signup : this.authService.login;
-    method(authForm.value.email, authForm.value.password)
-      .subscribe(
-        {
-          next: (resp) => {
-            authForm.reset();
-            this.isInProgress = false;
-            this.router.navigate(['/recipes']);
-          },
-          error: (err) => {
-            console.error(err);
-            this.error = err;
-            this.showErrorAlert(err);
-            this.isInProgress = false;
-          },
-        });
+    if (this.isSignUpMode) {
+      this.store.dispatch(new SignupStart(authForm.value.email, authForm.value.password));
+    } else {
+      this.store.dispatch(new AuthenticateStart(authForm.value.email, authForm.value.password));
+    }
   }
 
   private showErrorAlert(message: string) {
@@ -70,6 +74,7 @@ export class AuthComponent implements OnDestroy {
     this.alertCloseSub = compRef.instance.close.subscribe((a) => {
       this.alertCloseSub?.unsubscribe();
       compRef.destroy();
+      this.store.dispatch(new HandleError());
       return a;
     })
   }
