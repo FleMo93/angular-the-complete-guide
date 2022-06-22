@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { map, Subscription, take } from 'rxjs';
 import { LogoutAction } from '../auth/store/auth.actions';
-import { DataStorageService } from '../shared/data-storage.service';
+import { FetchRecipesAction, StoreRecipesAction } from '../recipes/store/recipe.actions';
 import { AppState } from '../store/app.reducer';
 
 export enum View {
@@ -22,7 +21,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subscription?: Subscription;
 
   constructor(
-    private readonly dataStorage: DataStorageService,
     private readonly store: Store<AppState>) { }
 
   ngOnInit(): void {
@@ -36,11 +34,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   public onSaveData() {
-    this.dataStorage.storeRecipes();
+    this.store.dispatch(new StoreRecipesAction());
   }
 
   public fetchData() {
-    this.dataStorage.fetchRecipes();
+    this.store.dispatch(new FetchRecipesAction());
   }
 
   public onLogout() {

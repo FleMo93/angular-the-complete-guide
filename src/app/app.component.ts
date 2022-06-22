@@ -2,9 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
-import { AuthService } from './auth/auth.service';
 import { AutoLogin } from './auth/store/auth.actions';
-import { DataStorageService } from './shared/data-storage.service';
+import { FetchRecipesAction } from './recipes/store/recipe.actions';
 import { AppState } from './store/app.reducer';
 
 @Component({
@@ -16,19 +15,17 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscription?: Subscription;
 
   constructor(
-    private readonly authService: AuthService,
     private readonly store: Store<AppState>,
-    private readonly dataStorage: DataStorageService,
     private readonly router: Router,
   ) { }
 
   ngOnInit(): void {
     this.store.dispatch(new AutoLogin());
     this.subscription = this.store.select('auth').subscribe((state) => {
-      if (!state.user)
+      if (!state.user && !state.loading)
         this.router.navigate(['/auth']);
-      else
-        this.dataStorage.fetchRecipes();
+      else if (state.user)
+        this.store.dispatch(new FetchRecipesAction());
     });
   }
 

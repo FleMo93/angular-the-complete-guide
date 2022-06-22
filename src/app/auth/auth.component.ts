@@ -6,14 +6,12 @@ import {
   ViewChild
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { AlertComponent } from '../shared/alert/alert.component';
 import { PlaceholderDirective } from '../shared/placeholder.directive';
 import { AppState } from '../store/app.reducer';
-import { AuthService } from './auth.service';
-import { LoginAction, AuthenticateStart, SignupStart, HandleError } from './store/auth.actions';
+import { AuthenticateStart, SignupStart, HandleError } from './store/auth.actions';
 
 @Component({
   selector: 'app-auth',
@@ -30,8 +28,6 @@ export class AuthComponent implements OnInit, OnDestroy {
   private storeSub?: Subscription;
 
   constructor(
-    private readonly authService: AuthService,
-    private readonly router: Router,
     private readonly componentFactoryResolve: ComponentFactoryResolver,
     private readonly store: Store<AppState>
   ) { }

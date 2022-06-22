@@ -1,6 +1,6 @@
 import { Action, ActionReducer } from "@ngrx/store";
 import { User } from "../user.model";
-import { Actions, AuthActions, LoginAction, AuthenticateFail } from "./auth.actions";
+import { Actions, AuthActions, AuthenticationSuccessAction, AuthenticateFail } from "./auth.actions";
 
 export type StoreState = {
   user: User | null;
@@ -18,10 +18,10 @@ export const authReducer: ActionReducer<StoreState, Action | AuthActions> = (
   action
 ): StoreState => {
   switch (action.type) {
-    case Actions.Login:
+    case Actions.AuthenticationSuccess:
       return {
         ...state,
-        user: (action as LoginAction).user,
+        user: (action as AuthenticationSuccessAction).user,
         authError: undefined,
         loading: false
       };

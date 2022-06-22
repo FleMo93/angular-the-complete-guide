@@ -64,8 +64,11 @@ export class AuthEffects {
 
   private authRedirect = createEffect(() =>
     this.actions.pipe(
-      ofType(AuthActions.Actions.Login),
-      tap(() => this.router.navigate(['/recipes']))),
+      ofType(AuthActions.Actions.AuthenticationSuccess),
+      tap((action: AuthActions.AuthenticationSuccessAction) => {
+        if (action.redirect)
+          this.router.navigate(['/recipes'])
+      })),
     { dispatch: false });
 
   private authLogout = createEffect(() =>
@@ -89,7 +92,7 @@ export class AuthEffects {
       const expirationDate = new Date(userData._tokenExpirationDate);
       const user = new User(userData.email, userData.id, userData._token, expirationDate);
       this.authService.setLogoutTimer(expirationDate.getTime() - Date.now());
-      return new AuthActions.LoginAction(user);
+      return new AuthActions.AuthenticationSuccessAction(user, false);
     })
   ));
 
@@ -100,13 +103,13 @@ export class AuthEffects {
     private readonly authService: AuthService
   ) { }
 
-  private handleAuthentication = (resp: BaseResponseBody): AuthActions.LoginAction => {
+  private handleAuthentication = (resp: BaseResponseBody): AuthActions.AuthenticationSuccessAction => {
     const expirationDate = new Date(new Date().getTime() + +resp.expiresIn * 1000);
     const user = new User(resp.email, resp.localId, resp.idToken, expirationDate);
 
     this.authService.setLogoutTimer(+resp.expiresIn * 1000);
     localStorage.setItem('user-data', JSON.stringify(user));
-    return new AuthActions.LoginAction(user);
+    return new AuthActions.AuthenticationSuccessAction(user, true);
   }
 
   private logout = () => {

@@ -4,7 +4,7 @@ import { User } from "../user.model";
 export enum Actions {
   AuthenticateStart = '[Auth] Authenticate Start',
   AuthenticateFail = '[Auth] Authenticate Fail',
-  Login = '[Auth] Login',
+  AuthenticationSuccess = '[Auth] AuthenticationSuccess',
   Logout = '[Auth] Logout',
   SignupStart = '[Auth] Signup Start',
   Signup = '[Auth] Signup',
@@ -36,17 +36,22 @@ export class AuthenticateStart implements Action {
   }
 }
 
-export class LoginAction implements Action {
-  public readonly type = Actions.Login;
+export class AuthenticationSuccessAction implements Action {
+  public readonly type = Actions.AuthenticationSuccess;
   public readonly user: User;
+  public readonly redirect: boolean;
 
-  constructor(user: User);
-  constructor(mail: string, id: string, _token: string, tokenExpirationDate: Date);
-  constructor(mailOrUser: User | string, id?: string, token?: string, tokenExpirationDate?: Date) {
-    if (typeof mailOrUser === 'object')
+  constructor(user: User, redirect: boolean);
+  constructor(mail: string, id: string, _token: string, tokenExpirationDate: Date, redirect?: boolean);
+  constructor(mailOrUser: User | string, idOrRedirect?: string | boolean, token?: string, tokenExpirationDate?: Date, redirect?: boolean) {
+    if (typeof mailOrUser === 'object') {
       this.user = new User(mailOrUser.email, mailOrUser.id, mailOrUser.token ?? '', mailOrUser.tokenExpirationDate);
-    else if (id && token && tokenExpirationDate)
-      this.user = new User(mailOrUser, id, token, tokenExpirationDate);
+      this.redirect = !!idOrRedirect;
+    }
+    else if (typeof mailOrUser === 'string' && typeof idOrRedirect === 'string' && token && tokenExpirationDate && redirect) {
+      this.user = new User(mailOrUser, idOrRedirect, token, tokenExpirationDate);
+      this.redirect = redirect;
+    }
     else
       throw Error('Invalid constructor call');
   }
@@ -77,7 +82,7 @@ export class AutoLogin implements Action {
 }
 
 export type AuthActions =
-  LoginAction
+  AuthenticationSuccessAction
   | LogoutAction
   | AuthenticateStart
   | AuthenticateFail
